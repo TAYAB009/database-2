@@ -31,7 +31,7 @@ class _NotesListViewState extends State<NotesListView> {
   void fetchUsers() async {
     List<User> users = await dBhandler.getUser();
     for (var user in users) {
-      print(user.id);
+      print(user.name);
     }
     // for (var user in users) {
     //   print('id: ${user.id} name: ${user.name}');
@@ -101,6 +101,5 @@ class _NotesListViewState extends State<NotesListView> {
         },
       ),
     );
-    ;
   }
 }

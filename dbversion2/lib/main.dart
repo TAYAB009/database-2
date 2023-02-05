@@ -1,7 +1,6 @@
 import 'package:dbversion2/db_handler.dart';
 import 'package:dbversion2/notes_list_view.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,43 +29,35 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  TextEditingController nameController = TextEditingController();
+  late TextEditingController nameController;
 
   DBhandler dBhandler = DBhandler();
   late User testUser;
-  late User testUser2;
   late List<User> user;
   //adding users
   void addUser() async {
     await dBhandler.initializeDB();
     final result = await dBhandler.insertUser(user);
-    List<User> getusers = await dBhandler.getUser();
     if (result == 0) {
-      print('User not added!');
+      print('User not inserted!');
     } else {
-      print(result);
-      print(getusers[2]);
+      print('User inserted!');
     }
-  }
-
-// fetching users
-
-  void fetchUsers() async {
-    List<User> users = await dBhandler.getUser();
-    for (var user in users) {
-      print(user.id);
-    }
-    // for (var user in users) {
-    //   print('id: ${user.id} name: ${user.name}');
-    // }
   }
 
   @override
   void initState() {
-    testUser = User(name: 'ALEX');
-    //testUser2 = User(name: 'Khan');
+    nameController = TextEditingController();
+    testUser = User(name: '');
     user = [testUser];
     super.initState();
+  }
+
+  void updateUserName(String name) {
+    setState(() {
+      testUser = User(name: name);
+      user = [testUser];
+    });
   }
 
   @override
@@ -93,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   setState(() {
                     Navigator.push(context, MaterialPageRoute(
                       builder: (context) {
-                        return NotesListView();
+                        return const NotesListView();
                       },
                     ));
                   });
@@ -107,26 +98,48 @@ class _MyHomePageState extends State<MyHomePage> {
           )
         ],
       ),
-      // body: FutureBuilder(
-      //   future: dBhandler.getUser(),
-      //   builder: (context, snapshot) {
-      //     if (snapshot.hasData) {
-      //       return ListView.builder(
-      //         itemCount: snapshot.data!.length,
-      //         itemBuilder: (context, index) {
-      //           return ListTile(
-      //             title: Text(snapshot.data![index].id.toString()),
-      //             subtitle: Text(snapshot.data![index].name),
-      //           );
-      //         },
-      //       );
-      //     } else {
-      //       return const Center(
-      //         child: CircularProgressIndicator(),
-      //       );
-      //     }
-      //   },
-      // ),
+      body: FutureBuilder(
+        future: dBhandler.getUser(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Center(
+              child: Column(
+                children: [
+                  TextField(
+                    controller: nameController,
+                    onChanged: (value) {
+                      updateUserName(value);
+                    },
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'enter user name',
+                    ),
+                  ),
+                  const SizedBox(height: 10.0),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        nameController.clear();
+                        addUser();
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (context) {
+                            return const NotesListView();
+                          },
+                        ));
+                      });
+                    },
+                    child: const Text('Add User'),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
     );
   }
 }
